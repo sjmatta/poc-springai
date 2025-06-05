@@ -27,6 +27,10 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
+    - name: Install Maven
+      run: |
+        apt-get update && apt-get install -y maven
+        
     - name: Test MCP Server
       run: |
         cd mcp-server
