@@ -1,0 +1,20 @@
+spring:
+  ai:
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      
+server:
+  port: 8081
+  
+mcp:
+  server:
+    url: ws://localhost:8080/mcp
+    
+logging:
+  level:
+    com.example.mcpclient: INFO
+    org.springframework.ai: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %level - %msg%n"
+  file:
+    name: logs/mcp-client.log
