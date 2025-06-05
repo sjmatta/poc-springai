@@ -27,39 +27,15 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
-    - name: Verify Maven Installation
-      run: |
-        mvn --version
+    - name: Verify Environment
+      run: make verify
         
-    - name: Test MCP Server
-      run: |
-        cd mcp-server
-        mvn clean test
+    - name: Run Tests
+      run: make ci-test
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         
-    - name: Test MCP Client
-      run: |
-        cd mcp-client
-        mvn clean test
-      env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        
-    - name: Start MCP Server
-      run: |
-        cd mcp-server
-        mvn spring-boot:run &
-        sleep 30
-      env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        
-    - name: Test Server Health
-      run: |
-        timeout 30 bash -c 'until curl -f http://localhost:8080/actuator/health; do sleep 2; done' || echo "Health check failed"
-        
-    - name: Integration Test
-      run: |
-        cd mcp-client
-        mvn test -Dtest=McpClientIntegrationTest
+    - name: Run Integration Tests  
+      run: make ci-integration
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

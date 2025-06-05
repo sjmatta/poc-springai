@@ -1,5 +1,7 @@
 # Spring AI MCP Integration POCs
 
+[![Test Status](https://github.com/sjmatta/poc-springai/workflows/Test%20Spring%20AI%20MCP%20Integration/badge.svg)](https://github.com/sjmatta/poc-springai/actions)
+
 This repository contains two Proof of Concept (POC) projects demonstrating Model Context Protocol (MCP) integration with Spring AI:
 
 1. **MCP Server** - A Spring AI MCP Server that exposes AI capabilities via MCP protocol
@@ -27,41 +29,40 @@ springai/
 
 ```bash
 git clone <your-repo>
-cd springai
+cd poc-springai
 
-# Set up environment variables
-cp .env.example .env
+# Set up development environment
+make dev-setup
 # Edit .env and add your Anthropic API key
 ```
 
-### 2. Start MCP Server
+### 2. Development with Makefile
 
 ```bash
-cd mcp-server
-# Make sure ANTHROPIC_API_KEY is set in your environment
-mvn spring-boot:run
-```
+# See all available commands
+make help
 
-The server will start on `http://localhost:8080` with WebSocket endpoint at `ws://localhost:8080/mcp`
+# Run all tests
+make test
 
-### 3. Start MCP Client
-
-```bash
-cd mcp-client
-# Make sure ANTHROPIC_API_KEY is set in your environment
-mvn spring-boot:run
-```
-
-The client will start on `http://localhost:8081`
-
-### 4. Test Integration
-
-Run the integration test script:
-
-```bash
-# Set your API key first
+# Start MCP Server (port 8080)
 export ANTHROPIC_API_KEY="your-key-here"
-./integration-test/test-integration.sh
+make start-server
+
+# Start MCP Client (port 8081) - in another terminal
+export ANTHROPIC_API_KEY="your-key-here"  
+make start-client
+
+# Run full integration tests
+export ANTHROPIC_API_KEY="your-key-here"
+make integration-test
+```
+
+### 3. Manual Setup (Alternative)
+
+```bash
+cd mcp-server && mvn spring-boot:run  # Server on port 8080
+cd mcp-client && mvn spring-boot:run  # Client on port 8081
 ```
 
 Or test manually using the client API:
@@ -131,18 +132,17 @@ The implementation follows the MCP specification:
 
 ## Testing
 
-Run tests for individual projects:
-
 ```bash
-# Test server
-cd mcp-server && mvn test
+# Run all tests
+make test
 
-# Test client  
-cd mcp-client && mvn test
-```
+# Test individual projects  
+make test-server
+make test-client
 
-Or run the full integration test:
+# Run full integration test
+make integration-test
 
-```bash
-./integration-test/test-integration.sh
+# Check project status
+make status
 ```

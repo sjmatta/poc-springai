@@ -4,34 +4,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-### Building and Testing
+### Makefile Commands (Recommended)
 ```bash
-# Test individual projects
-cd mcp-server && mvn test
-cd mcp-client && mvn test
+# See all available commands
+make help
 
-# Run full integration test (requires ANTHROPIC_API_KEY)
+# Testing
+make test                # Run all tests
+make test-server         # Test MCP Server only
+make test-client         # Test MCP Client only  
+make integration-test    # Full integration test (requires ANTHROPIC_API_KEY)
+
+# Development
+make dev-setup          # Set up .env file
+make build              # Build both projects
+make clean              # Clean build artifacts
+make verify             # Verify Maven/Java setup
+
+# Running applications
 export ANTHROPIC_API_KEY="your-key-here"
-./integration-test/test-integration.sh
+make start-server       # Start MCP Server (port 8080)
+make start-client       # Start MCP Client (port 8081)
 
-# Test with GitHub Actions locally
-act -s ANTHROPIC_API_KEY="your-key-here"
+# CI/CD
+make ci-test            # CI test pipeline
+make ci-integration     # CI integration pipeline
+make status             # Show project status
 ```
 
-### Running the Applications
+### Manual Commands (Alternative)
 ```bash
-# Terminal 1 - Start MCP Server (port 8080)
-cd mcp-server
-mvn spring-boot:run
+# Testing
+cd mcp-server && mvn test
+cd mcp-client && mvn test
+./integration-test/test-integration.sh
 
-# Terminal 2 - Start MCP Client (port 8081) 
-cd mcp-client
-mvn spring-boot:run
+# Running
+cd mcp-server && mvn spring-boot:run  # port 8080
+cd mcp-client && mvn spring-boot:run  # port 8081
 
-# Manual testing via REST API
-curl -X POST http://localhost:8081/api/mcp/connect \
-  -H "Content-Type: application/json" \
-  -d '{"serverUrl": "ws://localhost:8080/mcp"}'
+# Local GitHub Actions testing
+act -s ANTHROPIC_API_KEY="your-key-here"
 ```
 
 ## Architecture Overview
