@@ -19,6 +19,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(mcpWebSocketHandler, "/mcp")
-                .setAllowedOrigins("*");
+                .setAllowedOrigins("http://localhost:8081", "http://localhost:3000", "http://127.0.0.1:8081")
+                .withSockJS();
     }
 }

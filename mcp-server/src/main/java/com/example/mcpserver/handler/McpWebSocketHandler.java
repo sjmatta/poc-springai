@@ -3,6 +3,8 @@ package com.example.mcpserver.handler;
 import com.example.mcpserver.model.McpMessage;
 import com.example.mcpserver.service.SpringAiService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -15,6 +17,9 @@ import java.util.Map;
 @Component
 public class McpWebSocketHandler extends TextWebSocketHandler {
     
+    private static final Logger logger = LoggerFactory.getLogger(McpWebSocketHandler.class);
+    private static final String PROTOCOL_VERSION = "2024-11-05";
+    
     private final SpringAiService springAiService;
     private final ObjectMapper objectMapper;
     
@@ -25,10 +30,10 @@ public class McpWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println("MCP WebSocket connection established: " + session.getId());
+        logger.info("MCP WebSocket connection established: {}", session.getId());
         
         Map<String, Object> initResponse = new HashMap<>();
-        initResponse.put("protocolVersion", "2024-11-05");
+        initResponse.put("protocolVersion", PROTOCOL_VERSION);
         initResponse.put("capabilities", Map.of("tools", Map.of()));
         
         McpMessage response = new McpMessage();
@@ -66,17 +71,18 @@ public class McpWebSocketHandler extends TextWebSocketHandler {
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(response)));
             
         } catch (Exception e) {
-            System.err.println("Error handling message: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error handling WebSocket message from session {}: {}", session.getId(), e.getMessage(), e);
+            sendErrorResponse(session, "internal_error", "Internal server error occurred");
         }
     }
     
     private void handleInitialize(McpMessage response) {
         Map<String, Object> result = new HashMap<>();
-        result.put("protocolVersion", "2024-11-05");
+        result.put("protocolVersion", PROTOCOL_VERSION);
         result.put("capabilities", Map.of("tools", Map.of()));
         result.put("serverInfo", Map.of("name", "spring-ai-mcp-server", "version", "1.0.0"));
         response.setResult(result);
+        logger.debug("MCP initialization completed");
     }
     
     private void handleToolsList(McpMessage response) {
@@ -150,6 +156,17 @@ public class McpWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        System.out.println("MCP WebSocket connection closed: " + session.getId());
+        logger.info("MCP WebSocket connection closed: {} with status: {}", session.getId(), status.toString());
+    }
+    
+    private void sendErrorResponse(WebSocketSession session, String errorCode, String errorMessage) {
+        try {
+            McpMessage errorResponse = new McpMessage();
+            errorResponse.setId("error");
+            errorResponse.setResult(Map.of("error", Map.of("code", errorCode, "message", errorMessage)));
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(errorResponse)));
+        } catch (Exception e) {
+            logger.error("Failed to send error response: {}", e.getMessage(), e);
+        }
     }
 }
